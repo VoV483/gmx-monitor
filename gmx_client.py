@@ -1,23 +1,21 @@
 import requests
 
-class GMXClient:
-    """
-    Простой клиент для публичного GMX Oracle API.
-    """
 
+class GMXClient:
     BASE_URL = "https://arbitrum-api.gmxinfra.io"
 
-    def __init__(self, timeout: int = 15):
+    def __init__(self, timeout: int = 20):
         self.timeout = timeout
 
-    def _get(self, endpoint: str):
+    def _get(self, endpoint: str, params=None):
         url = f"{self.BASE_URL}{endpoint}"
 
         response = requests.get(
             url,
+            params=params,
             headers={
                 "Accept": "application/json",
-                "User-Agent": "gmx-monitor/0.1",
+                "User-Agent": "gmx-monitor/0.2",
             },
             timeout=self.timeout,
         )
@@ -27,14 +25,32 @@ class GMXClient:
         return response.json()
 
     def get_markets(self):
-        """
-        Получить список рынков GMX.
-        """
         return self._get("/markets")
 
     def get_markets_info(self):
-        """
-        Получить актуальное состояние рынков:
-        liquidity, open interest, funding, borrowing и др.
-        """
         return self._get("/markets/info")
+
+    def get_glvs(self):
+        return self._get("/glvs/")
+
+    def get_glvs_info(self):
+        return self._get("/glvs/info")
+
+    def get_apy(self, period="7d"):
+        return self._get(
+            "/apy",
+            params={"period": period},
+        )
+
+    def get_performance(self, period="30d", address=None):
+        params = {
+            "period": period,
+        }
+
+        if address:
+            params["address"] = address
+
+        return self._get(
+            "/performance/annualized",
+            params=params,
+        )
